@@ -26,7 +26,6 @@
 
     h1 {
       margin: 0 0 20px;
-      font-size: 30px;
     }
 
     .tabs {
@@ -38,12 +37,11 @@
 
     .tab {
       padding: 11px 22px;
-      border: none;
+      border: 0;
       border-radius: 8px;
       background: #333;
       color: white;
       cursor: pointer;
-      font-size: 15px;
     }
 
     .tab.active {
@@ -59,20 +57,19 @@
     input {
       flex: 1;
       padding: 15px;
-      border: none;
-      outline: none;
+      border: 0;
+      outline: 0;
       font-size: 16px;
       border-radius: 8px 0 0 8px;
     }
 
     .search-btn {
       padding: 15px 22px;
-      border: none;
+      border: 0;
       background: #e50914;
       color: white;
-      font-size: 16px;
-      border-radius: 0 8px 8px 0;
       cursor: pointer;
+      border-radius: 0 8px 8px 0;
     }
 
     main {
@@ -84,38 +81,24 @@
     #message {
       text-align: center;
       color: #aaa;
-      margin: 45px 0;
+      margin: 40px 0;
     }
 
-    .player {
-      position: relative;
-      width: 100%;
-      padding-bottom: 56.25%;
-      background: black;
+    .embed-box {
+      background: #1d1d1d;
+      padding: 15px;
       border-radius: 12px;
       overflow: hidden;
     }
-
-    .player iframe {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border: 0;
-      left: 0;
-      top: 0;
-    }
-
-    .info {
-      background: #1d1d1d;
-      padding: 18px;
-      margin-top: 15px;
-      border-radius: 10px;
-    }
-
-    .info p {
-      color: #aaa;
-    }
   </style>
+
+  <!-- Telegram official embed script -->
+  <script async
+    src="https://telegram.org/js/telegram-widget.js?22"
+    data-telegram-post="channelname123456/336"
+    data-width="100%">
+  </script>
+
 </head>
 
 <body>
@@ -164,7 +147,7 @@
   <main>
 
     <div id="message">
-      Paste a YouTube video link to watch it here.
+      Paste a video link to watch it here.
     </div>
 
     <div id="videoArea"></div>
@@ -184,33 +167,24 @@
       const input =
         document.getElementById("searchInput");
 
-      const youtubeTab =
-        document.getElementById("youtubeTab");
+      document
+        .getElementById("youtubeTab")
+        .classList.toggle("active", type === "youtube");
 
-      const telegramTab =
-        document.getElementById("telegramTab");
-
-
-      youtubeTab.classList.remove("active");
-      telegramTab.classList.remove("active");
+      document
+        .getElementById("telegramTab")
+        .classList.toggle("active", type === "telegram");
 
 
       if (type === "youtube") {
-
-        youtubeTab.classList.add("active");
 
         input.placeholder =
           "Paste YouTube video link...";
 
         document.getElementById("message").textContent =
-          "Paste a YouTube video link to watch it here.";
+          "Paste a YouTube video link.";
 
-      }
-
-
-      if (type === "telegram") {
-
-        telegramTab.classList.add("active");
+      } else {
 
         input.placeholder =
           "Paste public Telegram post link...";
@@ -234,15 +208,11 @@
         const link = new URL(url);
 
         if (link.hostname.includes("youtu.be")) {
-
           return link.pathname.substring(1);
-
         }
 
         if (link.hostname.includes("youtube.com")) {
-
           return link.searchParams.get("v");
-
         }
 
         return null;
@@ -257,13 +227,44 @@
 
 
 
+    function getTelegramPost(url) {
+
+      try {
+
+        const link = new URL(url);
+
+        if (!link.hostname.includes("t.me")) {
+          return null;
+        }
+
+        const parts =
+          link.pathname
+            .split("/")
+            .filter(Boolean);
+
+        if (parts.length < 2) {
+          return null;
+        }
+
+        return parts[0] + "/" + parts[1];
+
+      } catch {
+
+        return null;
+
+      }
+
+    }
+
+
+
     function searchVideo() {
 
-      const input =
-        document.getElementById("searchInput");
-
       const value =
-        input.value.trim();
+        document
+          .getElementById("searchInput")
+          .value
+          .trim();
 
       const message =
         document.getElementById("message");
@@ -275,7 +276,7 @@
       if (!value) {
 
         message.textContent =
-          "Please enter a link.";
+          "Please enter a video link.";
 
         videoArea.innerHTML = "";
 
@@ -287,16 +288,14 @@
 
       if (source === "youtube") {
 
-        const videoID =
+        const id =
           getYouTubeID(value);
 
 
-        if (!videoID) {
+        if (!id) {
 
           message.textContent =
-            "Please enter a valid YouTube video link.";
-
-          videoArea.innerHTML = "";
+            "Invalid YouTube link.";
 
           return;
 
@@ -308,23 +307,16 @@
 
         videoArea.innerHTML = `
 
-          <div class="player">
+          <div class="embed-box">
 
             <iframe
-              src="https://www.youtube.com/embed/${videoID}"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              width="100%"
+              height="450"
+              src="https://www.youtube.com/embed/${id}"
+              title="YouTube video"
+              frameborder="0"
               allowfullscreen>
             </iframe>
-
-          </div>
-
-          <div class="info">
-
-            <h2>🎬 YouTube Video</h2>
-
-            <p>
-              This video is playing inside your website.
-            </p>
 
           </div>
 
@@ -338,46 +330,57 @@
 
       if (source === "telegram") {
 
-        if (
-          !value.includes("t.me/") &&
-          !value.includes("telegram.me/")
-        ) {
+        const post =
+          getTelegramPost(value);
+
+
+        if (!post) {
 
           message.textContent =
-            "Please enter a public Telegram link.";
-
-          videoArea.innerHTML = "";
+            "Invalid public Telegram post link.";
 
           return;
 
         }
 
 
-        message.textContent =
-          "Opening public Telegram post...";
+        message.textContent = "";
 
 
         videoArea.innerHTML = `
 
-          <div class="info">
+          <div class="embed-box">
 
-            <h2>📱 Telegram</h2>
-
-            <p>
-              This public Telegram post cannot always be
-              embedded as a video. Use the button below
-              to open the public post.
-            </p>
-
-            <button
-              class="search-btn"
-              onclick="window.open('${value}', '_blank')">
-              Open Telegram Post
-            </button>
+            <blockquote
+              class="telegram-post"
+              data-telegram-post="${post}"
+              data-width="100%">
+            </blockquote>
 
           </div>
 
         `;
+
+
+        const oldScript =
+          document.getElementById("telegram-script");
+
+        if (oldScript) {
+          oldScript.remove();
+        }
+
+
+        const script =
+          document.createElement("script");
+
+        script.id = "telegram-script";
+
+        script.async = true;
+
+        script.src =
+          "https://telegram.org/js/telegram-widget.js?22";
+
+        document.body.appendChild(script);
 
       }
 
