@@ -18,25 +18,25 @@
     }
 
     header {
-      padding: 25px 15px;
+      padding: 30px 15px;
       text-align: center;
       background: #181818;
     }
 
     h1 {
-      margin: 0 0 18px;
-      font-size: 28px;
+      margin: 0 0 20px;
+      font-size: 30px;
     }
 
     .search {
       display: flex;
-      max-width: 600px;
+      max-width: 650px;
       margin: auto;
     }
 
     input {
       flex: 1;
-      padding: 14px;
+      padding: 15px;
       border: none;
       outline: none;
       font-size: 16px;
@@ -44,7 +44,7 @@
     }
 
     button {
-      padding: 14px 20px;
+      padding: 15px 22px;
       border: none;
       background: #e50914;
       color: white;
@@ -53,33 +53,21 @@
       border-radius: 0 8px 8px 0;
     }
 
+    button:hover {
+      background: #b20710;
+    }
+
     main {
-      max-width: 1000px;
-      margin: 25px auto;
+      max-width: 900px;
+      margin: 30px auto;
       padding: 0 15px;
-    }
-
-    .video {
-      background: #1d1d1d;
-      margin-bottom: 18px;
-      padding: 15px;
-      border-radius: 10px;
-    }
-
-    .video h2 {
-      font-size: 19px;
-      margin: 0 0 8px;
-    }
-
-    .video p {
-      color: #aaa;
-      margin: 0;
     }
 
     #message {
       text-align: center;
       color: #aaa;
-      margin-top: 40px;
+      margin-top: 50px;
+      font-size: 17px;
     }
   </style>
 </head>
@@ -90,66 +78,45 @@
     <h1>🎬 Video Search</h1>
 
     <div class="search">
-      <input id="searchInput" type="text" placeholder="Search video...">
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Search video..."
+        onkeydown="handleEnter(event)"
+      >
+
       <button onclick="searchVideo()">Search</button>
     </div>
   </header>
 
   <main>
-    <div id="results"></div>
-    <div id="message">Search for a video</div>
+    <div id="message">
+      Search for a video
+    </div>
   </main>
 
   <script>
-    const videos = [
-      {
-        title: "Sample Video 1",
-        description: "This is a sample video result."
-      },
-      {
-        title: "Sample Video 2",
-        description: "Another sample video result."
-      },
-      {
-        title: "Funny Video",
-        description: "A funny video example."
-      }
-    ];
-
     function searchVideo() {
-      const keyword =
-        document.getElementById("searchInput").value.toLowerCase().trim();
-
-      const results = document.getElementById("results");
-      const message = document.getElementById("message");
-
-      results.innerHTML = "";
+      const input = document.getElementById("searchInput");
+      const keyword = input.value.trim();
 
       if (!keyword) {
-        message.textContent = "Please enter a search word.";
+        document.getElementById("message").textContent =
+          "Please enter a search word.";
         return;
       }
 
-      const found = videos.filter(video =>
-        video.title.toLowerCase().includes(keyword) ||
-        video.description.toLowerCase().includes(keyword)
-      );
+      const youtubeURL =
+        "https://www.youtube.com/results?search_query=" +
+        encodeURIComponent(keyword);
 
-      if (found.length === 0) {
-        message.textContent = "No videos found.";
-        return;
+      window.location.href = youtubeURL;
+    }
+
+    function handleEnter(event) {
+      if (event.key === "Enter") {
+        searchVideo();
       }
-
-      message.textContent = "";
-
-      found.forEach(video => {
-        results.innerHTML += `
-          <div class="video">
-            <h2>${video.title}</h2>
-            <p>${video.description}</p>
-          </div>
-        `;
-      });
     }
   </script>
 
