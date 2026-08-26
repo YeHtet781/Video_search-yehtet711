@@ -26,6 +26,28 @@
 
     h1 {
       margin: 0 0 20px;
+      font-size: 30px;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .tab {
+      padding: 11px 22px;
+      border: none;
+      border-radius: 8px;
+      background: #333;
+      color: white;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .tab.active {
+      background: #e50914;
     }
 
     .search {
@@ -43,7 +65,7 @@
       border-radius: 8px 0 0 8px;
     }
 
-    button {
+    .search-btn {
       padding: 15px 22px;
       border: none;
       background: #e50914;
@@ -59,11 +81,16 @@
       padding: 0 15px;
     }
 
+    #message {
+      text-align: center;
+      color: #aaa;
+      margin: 45px 0;
+    }
+
     .player {
       position: relative;
       width: 100%;
       padding-bottom: 56.25%;
-      margin-top: 25px;
       background: black;
       border-radius: 12px;
       overflow: hidden;
@@ -79,20 +106,14 @@
     }
 
     .info {
-      margin-top: 20px;
-      padding: 20px;
       background: #1d1d1d;
+      padding: 18px;
+      margin-top: 15px;
       border-radius: 10px;
     }
 
     .info p {
       color: #aaa;
-    }
-
-    #message {
-      text-align: center;
-      color: #aaa;
-      margin-top: 50px;
     }
   </style>
 </head>
@@ -100,20 +121,45 @@
 <body>
 
   <header>
+
     <h1>🎬 Video Search</h1>
 
+    <div class="tabs">
+
+      <button
+        id="youtubeTab"
+        class="tab active"
+        onclick="selectSource('youtube')">
+        YouTube
+      </button>
+
+      <button
+        id="telegramTab"
+        class="tab"
+        onclick="selectSource('telegram')">
+        Telegram
+      </button>
+
+    </div>
+
     <div class="search">
+
       <input
         id="searchInput"
         type="text"
         placeholder="Paste YouTube video link..."
       >
 
-      <button onclick="loadVideo()">
-        Watch
+      <button
+        class="search-btn"
+        onclick="searchVideo()">
+        Search
       </button>
+
     </div>
+
   </header>
+
 
   <main>
 
@@ -125,81 +171,216 @@
 
   </main>
 
+
   <script>
 
-    function getVideoID(url) {
+    let source = "youtube";
+
+
+    function selectSource(type) {
+
+      source = type;
+
+      const input =
+        document.getElementById("searchInput");
+
+      const youtubeTab =
+        document.getElementById("youtubeTab");
+
+      const telegramTab =
+        document.getElementById("telegramTab");
+
+
+      youtubeTab.classList.remove("active");
+      telegramTab.classList.remove("active");
+
+
+      if (type === "youtube") {
+
+        youtubeTab.classList.add("active");
+
+        input.placeholder =
+          "Paste YouTube video link...";
+
+        document.getElementById("message").textContent =
+          "Paste a YouTube video link to watch it here.";
+
+      }
+
+
+      if (type === "telegram") {
+
+        telegramTab.classList.add("active");
+
+        input.placeholder =
+          "Paste public Telegram post link...";
+
+        document.getElementById("message").textContent =
+          "Paste a public Telegram post link.";
+
+      }
+
+
+      document.getElementById("videoArea").innerHTML = "";
+
+    }
+
+
+
+    function getYouTubeID(url) {
 
       try {
 
         const link = new URL(url);
 
         if (link.hostname.includes("youtu.be")) {
+
           return link.pathname.substring(1);
+
         }
 
         if (link.hostname.includes("youtube.com")) {
+
           return link.searchParams.get("v");
+
         }
 
         return null;
 
       } catch {
+
         return null;
+
       }
+
     }
 
 
-    function loadVideo() {
+
+    function searchVideo() {
 
       const input =
-        document.getElementById("searchInput").value.trim();
+        document.getElementById("searchInput");
 
-      const videoID = getVideoID(input);
-
-      const videoArea =
-        document.getElementById("videoArea");
+      const value =
+        input.value.trim();
 
       const message =
         document.getElementById("message");
 
+      const videoArea =
+        document.getElementById("videoArea");
 
-      if (!videoID) {
+
+      if (!value) {
 
         message.textContent =
-          "Please paste a valid YouTube video link.";
+          "Please enter a link.";
 
         videoArea.innerHTML = "";
 
         return;
+
       }
 
 
-      message.textContent = "";
+
+      if (source === "youtube") {
+
+        const videoID =
+          getYouTubeID(value);
 
 
-      videoArea.innerHTML = `
+        if (!videoID) {
 
-        <div class="player">
+          message.textContent =
+            "Please enter a valid YouTube video link.";
 
-          <iframe
-            src="https://www.youtube.com/embed/${videoID}"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen>
-          </iframe>
+          videoArea.innerHTML = "";
 
-        </div>
+          return;
 
-        <div class="info">
+        }
 
-          <h2>🎬 Video Player</h2>
 
-          <p>
-            You are watching this video inside the website.
-          </p>
+        message.textContent = "";
 
-        </div>
 
-      `;
+        videoArea.innerHTML = `
+
+          <div class="player">
+
+            <iframe
+              src="https://www.youtube.com/embed/${videoID}"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+
+          </div>
+
+          <div class="info">
+
+            <h2>🎬 YouTube Video</h2>
+
+            <p>
+              This video is playing inside your website.
+            </p>
+
+          </div>
+
+        `;
+
+        return;
+
+      }
+
+
+
+      if (source === "telegram") {
+
+        if (
+          !value.includes("t.me/") &&
+          !value.includes("telegram.me/")
+        ) {
+
+          message.textContent =
+            "Please enter a public Telegram link.";
+
+          videoArea.innerHTML = "";
+
+          return;
+
+        }
+
+
+        message.textContent =
+          "Opening public Telegram post...";
+
+
+        videoArea.innerHTML = `
+
+          <div class="info">
+
+            <h2>📱 Telegram</h2>
+
+            <p>
+              This public Telegram post cannot always be
+              embedded as a video. Use the button below
+              to open the public post.
+            </p>
+
+            <button
+              class="search-btn"
+              onclick="window.open('${value}', '_blank')">
+              Open Telegram Post
+            </button>
+
+          </div>
+
+        `;
+
+      }
+
     }
 
   </script>
